@@ -1,0 +1,61 @@
+body {
+  margin:0px;
+  padding:0px;
+  background-color:lightgrey;
+}
+
+#main {
+  margin:auto;
+  width:400px;
+  transform: translate(0%, 50%);
+  box-shadow:4px 4px 8px blue;
+}
+
+#title {
+  margin:auto;
+  width:400px;
+  transform: translate(0%, 870%);
+  font-family:serif;
+  text-decoration:oblique;
+  font-size:18px;
+}
+
+#amp {  
+  margin:auto;
+  width:400px;
+  text-align: left;
+  transform: rotate(-90deg) translate(0%, 0%);
+  -webkit-transform: rotate(-90deg) translate(8%, -1208%);
+  -moz-transform: rotate(-90deg) translate(8%, -1208%);
+  -o-transform: rotate(-90deg) translate(0%, 0%);
+  -ms-transform: rotate(-90deg) translate(0%, 0%); 
+}
+
+#web {  
+  margin:auto;
+  width:400px;
+  text-align: left;
+  transform: rotate(90deg) translate(0%, 0%);
+  -webkit-transform: rotate(90deg) translate(8%, -1208%);
+  -moz-transform: rotate(90deg) translate(8%, -1208%);
+  -o-transform: rotate(90deg) translate(0%, 0%);
+  -ms-transform: rotate(90deg) translate(0%, 0%);
+  
+}
+#pan {
+  margin:auto;
+  width:400px;
+  transform: translate(0%, 1200%);
+  text-align: left;
+}
+
+p {
+  margin:0;
+}
+button {
+  background-color:transparent;
+  border-width: 1px;
+  width: 60px;
+  border-color:black;
+  border-radius:10px;
+}
