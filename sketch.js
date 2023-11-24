@@ -93,7 +93,7 @@ function draw() {
       index.value = i;
       index2.value = i;
       pan.value = map(boids[i].position.x, 0, 400, 1, 0);
-      amp.value = map(boids[i].position.y, 0, 400, 0.9, 0.3);
+      amp.value = map(boids[i].position.y, 0, 400, 1.0, 0.15);
       }
       catch (error) {
         console.log(error);
@@ -113,7 +113,7 @@ class Boid {
     this.position = createVector(x, y);
     this.r = 1.0;
     this.maxspeed = 7;    // Maximum speed
-    this.maxforce = 0.15; // Maximum steering force
+    this.maxforce = 0.35; // Maximum steering force
   }
 
   run(boids) {
@@ -134,7 +134,7 @@ class Boid {
     let ali = this.align(boids);    // Alignment
     let coh = this.cohesion(boids); // Cohesion
     // Arbitrarily weight these forces
-    sep.mult(2.5);
+    sep.mult(7.5);
     ali.mult(1.0);
     coh.mult(1.0);
     // Add the force vectors to acceleration
@@ -171,13 +171,12 @@ class Boid {
   render() {
     fill(255, 0, 0);
     stroke(0, 0, 0);
-    ellipse(this.position.x, this.position.y, 10, 10);
+    ellipse(this.position.x, this.position.y, 25, 25);
   }
   
   // Wraparound
   borders() {
     if (this.position.x < -this.r) this.velocity.x = this.velocity.x * -1;
-    
     if (this.position.y < -this.r) this.velocity.y = this.velocity.y * -1;
     if (this.position.x > width + this.r) this.velocity.x = this.velocity.x * -1;
     if (this.position.y > height + this.r) this.velocity.y = this.velocity.y * -1;
@@ -186,7 +185,7 @@ class Boid {
   // Separation
   // Method checks for nearby boids and steers away
   separate(boids) {
-    let desiredseparation = 25.0;
+    let desiredseparation = 10.0;
     let steer = createVector(0, 0);
     let count = 0;
     // For every boid in the system, check if it's too close
@@ -246,7 +245,7 @@ class Boid {
   // Cohesion
   // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
   cohesion(boids) {
-    let neighbordist = 50;
+    let neighbordist = 10;
     let sum = createVector(0, 0); // Start with empty vector to accumulate all locations
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
