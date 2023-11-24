@@ -14,9 +14,8 @@ body {
 #title {
   margin:auto;
   width:400px;
-  transform: translate(0%, 870%);
+  transform: translate(0%, -1100%);
   font-family:serif;
-  text-decoration:oblique;
   font-size:18px;
 }
 
@@ -24,34 +23,39 @@ body {
   margin:auto;
   width:400px;
   text-align: left;
-  transform: rotate(-90deg) translate(0%, 0%);
-  -webkit-transform: rotate(-90deg) translate(8%, -1208%);
-  -moz-transform: rotate(-90deg) translate(8%, -1208%);
-  -o-transform: rotate(-90deg) translate(0%, 0%);
-  -ms-transform: rotate(-90deg) translate(0%, 0%); 
+  transform: rotate(-90deg) translate(12%, -1210%);
+  -webkit-transform: rotate(-90deg) translate(12%, -1210%);
+  -moz-transform: rotate(-90deg) translate(12%, -1210%);
+  -o-transform: rotate(-90deg) translate(12%, -1210%);
+  -ms-transform: rotate(-90deg) translate(12%, -1210%); 
 }
 
 #web {  
   margin:auto;
   width:400px;
   text-align: left;
-  transform: rotate(90deg) translate(0%, 0%);
-  -webkit-transform: rotate(90deg) translate(8%, -1208%);
-  -moz-transform: rotate(90deg) translate(8%, -1208%);
-  -o-transform: rotate(90deg) translate(0%, 0%);
-  -ms-transform: rotate(90deg) translate(0%, 0%);
+  transform: rotate(90deg) translate(8%, -1210%);
+  -webkit-transform: rotate(90deg) translate(8%, -1210%);
+  -moz-transform: rotate(90deg) translate(8%, -1210%);
+  -o-transform: rotate(90deg) translate(8%, -1210%);
+  -ms-transform: rotate(90deg) translate(8%, -1210%);
   
 }
 #pan {
   margin:auto;
   width:400px;
-  transform: translate(0%, 1200%);
   text-align: left;
+  transform: translate(0%, 1050%);
+  -webkit-transform: translate(0%, 1050%);
+  -moz-transform: translate(0%, 1050%);
+  -o-transform: translate(0%, 1050%);
+  -ms-transform: translate(0%, 1050%);
 }
 
 p {
   margin:0;
 }
+
 button {
   background-color:transparent;
   border-width: 1px;

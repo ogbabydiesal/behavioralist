@@ -169,9 +169,9 @@ class Boid {
   
   // Draw boid as a circle
   render() {
-    fill(127, 127, 255);
-    stroke(200, 0, 0);
-    ellipse(this.position.x, this.position.y, 1, 1);
+    fill(255, 0, 0);
+    stroke(0, 0, 0);
+    ellipse(this.position.x, this.position.y, 10, 10);
   }
   
   // Wraparound
