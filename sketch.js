@@ -77,7 +77,7 @@ function setup() {
   cnv.style('display', 'block');
   frameRate(30);
   // Add an initial set of boids into the system
-  for (let i = 0; i < 256; i++) {
+  for (let i = 0; i < 128; i++) {
     boids[i] = new Boid(random(width), random(height));
   }
 }
