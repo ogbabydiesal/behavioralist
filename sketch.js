@@ -34,15 +34,13 @@ const startup = async () => {
     const results = await device.loadDataBufferDependencies(dependencies);
     results.forEach(result => {
         if (result.type === "success") {
-            console.log(`Successfully loaded buffer with id ${result.id}`);
+            //console.log(`Successfully loaded buffer with id ${result.id}`);
             button.html('play');
             button.mousePressed(soundy);
         } else {
-            console.log(`Failed to load buffer with id ${result.id}, ${result.error}`);
+            //console.log(`Failed to load buffer with id ${result.id}, ${result.error}`);
         }
     });
-    // This connects the device to audio output, but you may still need to call context.resume()
-    // from a user-initiated function.
     index = device.parametersById.get("index");
     index2 = device.parametersById.get("index2");
     amp = device.parametersById.get("amp");
@@ -84,7 +82,6 @@ function setup() {
 
 function draw() {
   background(0);
-  // Run all the boids
   counter += 1;
   for (let i = 0; i < boids.length; i++) {
     boids[i].run(boids);
@@ -93,14 +90,12 @@ function draw() {
       index.value = i;
       index2.value = i;
       pan.value = map(boids[i].position.x, 0, 400, 1, 0);
-      amp.value = map(boids[i].position.y, 0, 400, 1.0, 0.15);
+      amp.value = map(boids[i].position.y, 0, 400, 1.1, 0.08);
       }
       catch (error) {
         console.log(error);
       }
-    }
-    
-    
+    } 
   }
 }
 
@@ -111,8 +106,8 @@ class Boid {
     this.acceleration = createVector(0, 0);
     this.velocity = p5.Vector.random2D();
     this.position = createVector(x, y);
-    this.r = 1.0;
-    this.maxspeed = 7;    // Maximum speed
+    this.r = 5.0;
+    this.maxspeed = 17;    // Maximum speed
     this.maxforce = 0.35; // Maximum steering force
   }
 
@@ -133,14 +128,19 @@ class Boid {
     let sep = this.separate(boids); // Separation
     let ali = this.align(boids);    // Alignment
     let coh = this.cohesion(boids); // Cohesion
+    let gol = this.goal(); //Goal Position
     // Arbitrarily weight these forces
-    sep.mult(7.5);
-    ali.mult(1.0);
-    coh.mult(1.0);
+    sep.mult(8.0);
+    ali.mult(.01);
+    coh.mult(10.1);
+    gol.mult(1.0);
     // Add the force vectors to acceleration
     this.applyForce(sep);
     this.applyForce(ali);
     this.applyForce(coh);
+    this.applyForce(gol);
+    this.maxspeed = map(mouseX, 20, width, 0, 120);
+    this.maxforce = map(mouseY, 0.20, width, 0, 5);
   }
   
   // Method to update location
@@ -171,21 +171,21 @@ class Boid {
   render() {
     fill(255, 0, 0);
     stroke(0, 0, 0);
-    ellipse(this.position.x, this.position.y, 25, 25);
+    ellipse(this.position.x, this.position.y, this.r, this.r);
   }
   
-  // Wraparound
+  // BOUNCE OFF WALLS
   borders() {
-    if (this.position.x < -this.r) this.velocity.x = this.velocity.x * -1;
-    if (this.position.y < -this.r) this.velocity.y = this.velocity.y * -1;
-    if (this.position.x > width + this.r) this.velocity.x = this.velocity.x * -1;
-    if (this.position.y > height + this.r) this.velocity.y = this.velocity.y * -1;
+    if (this.position.x < -0) this.velocity.x = this.velocity.x * -1;
+    if (this.position.y < -0) this.velocity.y = this.velocity.y * -1;
+    if (this.position.x > width ) this.velocity.x = this.velocity.x * -1;
+    if (this.position.y > height) this.velocity.y = this.velocity.y * -1;
   }
   
   // Separation
   // Method checks for nearby boids and steers away
   separate(boids) {
-    let desiredseparation = 10.0;
+    let desiredseparation = 55.0;
     let steer = createVector(0, 0);
     let count = 0;
     // For every boid in the system, check if it's too close
@@ -220,7 +220,7 @@ class Boid {
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   align(boids) {
-    let neighbordist = 50;
+    let neighbordist = 200;
     let sum = createVector(0, 0);
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
@@ -245,7 +245,7 @@ class Boid {
   // Cohesion
   // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
   cohesion(boids) {
-    let neighbordist = 10;
+    let neighbordist = 90;
     let sum = createVector(0, 0); // Start with empty vector to accumulate all locations
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
@@ -262,5 +262,13 @@ class Boid {
       return createVector(0, 0);
     }
   }  
+  goal() {
+    let golPos = createVector(0, 0);
+    //console.log(golPos);
+    let steer = p5.Vector.sub(golPos, this.velocity);
+    steer.limit(this.maxforce);
+    return steer;
+    
+  }
 }
 
