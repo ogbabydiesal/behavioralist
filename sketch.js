@@ -9,7 +9,7 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 let boids = [];
-
+let player, analyser, dataArray;
 let playing = false;
 let button;
 let index = 0;
@@ -19,9 +19,13 @@ let pan = 0;
 let counter = 0;
 let WAContext = window.AudioContext || window.webkitAudioContext;
 let context = new WAContext();
+let cohAmp;
+let cohMax = 7.3;
+let smoothing = 0.75;
+let cutoff = 60;
 
 const startup = async () => {
-    let rawPatcher = await fetch("imsys2.export.json");
+    let rawPatcher = await fetch("imsys64.export.json");
     let patcher = await rawPatcher.json();
     let device = await RNBO.createDevice({ context, patcher });
     
@@ -32,17 +36,27 @@ const startup = async () => {
     let dependencies = await fetch("dependencies.json");
     dependencies = await dependencies.json();
 
-    // Load the dependencies into the device
-    const results = await device.loadDataBufferDependencies(dependencies);
-    results.forEach(result => {
-        if (result.type === "success") {
-            //console.log(`Successfully loaded buffer with id ${result.id}`);
-            button.html('play');
-            button.mousePressed(soundy);
-        } else {
-            //console.log(`Failed to load buffer with id ${result.id}, ${result.error}`);
-        }
-    });
+    //create an audio source node from the audio tag
+    let source = context.createMediaElementSource(player);
+    let delay = context.createDelay(0.233);
+    delay.delayTime.value = 0.233;
+    delay.fee
+    //connect the audio source to the device
+    source.connect(device.node);
+    //get the amplitude level from audio source
+    let highpass = context.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = cutoff;
+    analyser = context.createAnalyser();
+    source.connect(highpass);
+    highpass.connect(analyser);
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = smoothing;
+    let bufferLength = analyser.frequencyBinCount;
+    dataArray = new Float32Array(bufferLength);
+    
+    
+    button.html("play");
     index = device.parametersById.get("index");
     index2 = device.parametersById.get("index2");
     amp = device.parametersById.get("amp");
@@ -52,18 +66,25 @@ const startup = async () => {
     context.suspend();
 };
 
+window.onload = function() {
+  let button = document.querySelector("button");
+  button.addEventListener("click", soundy);
+  player = document.getElementById("audio");
+  startup();
+}
+
 // We can't await an asynchronous function at the top level, so we create an asynchronous
 // function setup, and then call it without waiting for the result.
-startup();
-
 function soundy() {
   if (!playing) {
     playing = true;
     context.resume();
     button.html("stop");
+    player.play();
   }
   else {
     playing = false;
+    player.pause();
     context.suspend();
     button.html("play");
   }
@@ -78,10 +99,9 @@ function setup() {
   cnv.style('display', 'block');
   frameRate(30);
   // Add an initial set of boids into the system
-  for (let i = 0; i < 130; i++) {
+  for (let i = 0; i < 64; i++) {
     boids[i] = new Boid(random(width), random(height));
   }
-  
 }
 
 function draw() {
@@ -89,12 +109,20 @@ function draw() {
   counter += 1;
   for (let i = 0; i < boids.length; i++) {
     boids[i].run(boids);
-    if(counter % 6 == 0) {
+    if(counter % 1 == 0) {
       try {
+      analyser.getFloatTimeDomainData(dataArray);
+      let sum = 0;
+      for (let j = 0; j < dataArray.length; j++) {
+        sum += dataArray[j];
+      }
+      let rms = Math.sqrt(sum / dataArray.length); // Compute RMS
+      cohAmp = map(rms, 0, 0.2, 1, cohMax);
+      
       index.value = i;
       index2.value = i;
-      pan.value = map(boids[i].position.x, 0, width, 1, 0);
-      amp.value = map(boids[i].position.y, 0, height, 1.1, 0.08);
+      pan.value = map(boids[i].position.x, 0, width, 0.8, 0.2);
+      amp.value = map(boids[i].position.y, 0, height, 1.0, 0.6);
       }
       catch (error) {
         //console.log(error);
@@ -112,8 +140,8 @@ class Boid {
     this.velocity = p5.Vector.random2D();
     this.position = createVector(x, y);
     this.r = 7.0;
-    this.maxspeed = 20;    // Maximum speed
-    this.maxforce = 1.777; // Maximum steering force
+    this.maxspeed = 50;    // Maximum speed
+    this.maxforce = 1.2; // Maximum steering force
   }
 
   run(boids) {
@@ -133,27 +161,24 @@ class Boid {
     let sep = this.separate(boids); // Separation
     let ali = this.align(boids);    // Alignment
     let coh = this.cohesion(boids); // Cohesion
+    //console.log("coh is:" + coh)
     let gol = this.goal(); //Goal Position
     // Arbitrarily weight these forces
-    sep.mult(map(clamp(mouseX, 0, width), 0.0, width, 0.6, 2.6));
-    ali.mult(2.5);
-    coh.mult(map(clamp(mouseY, 0, height), 0.0, height, 2.1, 1.6));
-    gol.mult(1.4);
+    sep.mult(1.29);
+    ali.mult(1);
+    if (cohAmp > 0.1){coh.mult(0.77 * cohAmp)}
+    else {coh.mult(0.77)} 
+    gol.mult(1.41);
     // Add the force vectors to acceleration
+    this.applyForce(coh);
     this.applyForce(sep);
     this.applyForce(ali);
-    this.applyForce(coh);
+   
     this.applyForce(gol);
-    
-    //this.maxspeed = map(clamp(mouseX, 0, width), 0.0, width, 4, 7);
-
-    //this.maxforce = map(clamp(mouseY, 0, height), 0.0, height, 0.4, 5);
-    
   }
   
   // Method to update location
   update() {
-    
     // Update velocity
     this.velocity.add(this.acceleration);
     // Limit speed
@@ -162,7 +187,6 @@ class Boid {
     // Reset acceleration to 0 each cycle
     this.acceleration.mult(0);
   }
-  
   // A method that calculates and applies a steering force towards a target
   // STEER = DESIRED MINUS VELOCITY
   seek(target) {
@@ -178,24 +202,36 @@ class Boid {
   
   // Draw boid as a circle
   render() {
-    fill(255, 0, 0);
+    fill(255, 255, 255);
     stroke(0, 0, 0);
-    ellipse(this.position.x, this.position.y, this.r, this.r);
+    square(this.position.x, this.position.y, this.r);
   }
   
   // BOUNCE OFF WALLS
   borders() {
-    if (this.position.x < (0 + this.r) || this.position.x > (width - this.r)) {
+    if (this.position.x < (0 + this.r)) {
+      this.position.x = 0 + this.r;
       this.velocity.x = this.velocity.x * -1;
     }
-    if (this.position.y < (0 + this.r)|| this.position.y > (height - this.r)) {
-      this.velocity.y = this.velocity.y * -1;}
+    if (this.position.x > (width - this.r)) {
+      this.position.x = width - this.r;
+      this.velocity.x = this.velocity.x * -1; 
+    }
+    if (this.position.y < (0 + this.r)) {
+      this.position.y = 0 + this.r; 
+      this.velocity.y = this.velocity.y * -1;
+    }
+    if (this.position.y > (height - this.r)) {
+      this.position.y = height - this.r;
+      this.velocity.y = this.velocity.y * -1;
+    }
+
   }
   
   // Separation
   // Method checks for nearby boids and steers away
   separate(boids) {
-    let desiredseparation = 50.0;
+    let desiredseparation = 3300.0;
     let steer = createVector(0, 0);
     let count = 0;
     // For every boid in the system, check if it's too close
@@ -218,7 +254,7 @@ class Boid {
   
     // As long as the vector is greater than 0
     if (steer.mag() > 0) {
-      // Implement Reynolds: Steering = Desired - Velocity
+      //Implement Reynolds: Steering = Desired - Velocity
       steer.normalize();
       steer.mult(this.maxspeed);
       steer.sub(this.velocity);

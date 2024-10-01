@@ -58,8 +58,9 @@ p {
 
 button {
   background-color:transparent;
-  border-width: 1px;
+  border-width: 0.5px;
   width: 60px;
   border-color:black;
   border-radius:10px;
+  border-style:solid
 }
