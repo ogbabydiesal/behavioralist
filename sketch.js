@@ -20,7 +20,7 @@ let counter = 0;
 let WAContext = window.AudioContext || window.webkitAudioContext;
 let context = new WAContext();
 let cohAmp;
-let cohMax = 7.3;
+let cohMax = 17.3;
 let smoothing = 0.75;
 let cutoff = 60;
 
@@ -101,12 +101,17 @@ function setup() {
   // Add an initial set of boids into the system
   for (let i = 0; i < 64; i++) {
     boids[i] = new Boid(random(width), random(height));
+    boids[i].color = map(i, 0, 64, 255, 0);
+    boids[i].text = i;
   }
 }
 
 function draw() {
   background(0);
   counter += 1;
+  if (counter % 100 == 0) {
+    speed = map(random(), 0, 1, 0.5, 1.5);
+  }
   for (let i = 0; i < boids.length; i++) {
     boids[i].run(boids);
     if(counter % 1 == 0) {
@@ -116,8 +121,8 @@ function draw() {
       for (let j = 0; j < dataArray.length; j++) {
         sum += dataArray[j];
       }
-      let rms = Math.sqrt(sum / dataArray.length); // Compute RMS
-      cohAmp = map(rms, 0, 0.2, 1, cohMax);
+      let rms = Math.sqrt(sum / dataArray.length);
+      cohAmp = map(rms, 0, 0.2, 0.4, cohMax);
       
       index.value = i;
       index2.value = i;
@@ -140,8 +145,10 @@ class Boid {
     this.velocity = p5.Vector.random2D();
     this.position = createVector(x, y);
     this.r = 7.0;
-    this.maxspeed = 50;    // Maximum speed
+    this.maxspeed = 38;    // Maximum speed
     this.maxforce = 1.2; // Maximum steering force
+    this.color;
+    this.text = "Boid";
   }
 
   run(boids) {
@@ -165,7 +172,7 @@ class Boid {
     let gol = this.goal(); //Goal Position
     // Arbitrarily weight these forces
     sep.mult(1.29);
-    ali.mult(1);
+    ali.mult(1.0);
     if (cohAmp > 0.1){coh.mult(0.77 * cohAmp)}
     else {coh.mult(0.77)} 
     gol.mult(1.41);
@@ -202,8 +209,11 @@ class Boid {
   
   // Draw boid as a circle
   render() {
-    fill(255, 255, 255);
-    stroke(0, 0, 0);
+    
+    stroke(255, 0, 0);
+    fill(0, 255, 0);
+    text(this.text, this.position.x, this.position.y);
+    fill(255 - this.color, 0, 0);
     square(this.position.x, this.position.y, this.r);
   }
   
@@ -266,7 +276,7 @@ class Boid {
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   align(boids) {
-    let neighbordist = 100;
+    let neighbordist = 700;
     let sum = createVector(0, 0);
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
