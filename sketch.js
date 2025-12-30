@@ -5,6 +5,22 @@
  * (Rules: Cohesion, Separation, Alignment.)<br>
  * From <a href="http://natureofcode.com">natureofcode.com</a>.
  */
+
+function star(x, y, radius1, radius2, npoints) {
+  let angle = TWO_PI / npoints;
+  let halfAngle = angle / 2.0;
+  beginShape();
+  for (let a = 0; a < TWO_PI; a += angle) {
+    let sx = x + cos(a) * radius2;
+    let sy = y + sin(a) * radius2;
+    vertex(sx, sy);
+    sx = x + cos(a + halfAngle) * radius1;
+    sy = y + sin(a + halfAngle) * radius1;
+    vertex(sx, sy);
+  }
+  endShape(CLOSE);
+}
+
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -20,7 +36,7 @@ let counter = 0;
 let WAContext = window.AudioContext || window.webkitAudioContext;
 let context = new WAContext();
 let cohAmp;
-let cohMax = 17.3;
+let cohMax = 1.3;
 let smoothing = 0.75;
 let cutoff = 60;
 
@@ -40,7 +56,7 @@ const startup = async () => {
     let source = context.createMediaElementSource(player);
     let delay = context.createDelay(0.233);
     delay.delayTime.value = 0.233;
-    delay.fee
+    //delay.fee
     //connect the audio source to the device
     source.connect(device.node);
     //get the amplitude level from audio source
@@ -107,11 +123,9 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  background(0, 0, 0, 10);
   counter += 1;
-  if (counter % 100 == 0) {
-    speed = map(random(), 0, 1, 0.5, 1.5);
-  }
+  
   for (let i = 0; i < boids.length; i++) {
     boids[i].run(boids);
     if(counter % 1 == 0) {
@@ -122,7 +136,8 @@ function draw() {
         sum += dataArray[j];
       }
       let rms = Math.sqrt(sum / dataArray.length);
-      cohAmp = map(rms, 0, 0.2, 0.4, cohMax);
+      cohAmp = map(rms, 0, 0.2, 0.9, cohMax);
+      //cohAmp = 1;
       
       index.value = i;
       index2.value = i;
@@ -144,9 +159,9 @@ class Boid {
     this.acceleration = createVector(0, 0);
     this.velocity = p5.Vector.random2D();
     this.position = createVector(x, y);
-    this.r = 7.0;
-    this.maxspeed = 38;    // Maximum speed
-    this.maxforce = 1.2; // Maximum steering force
+    this.r = 20.0;
+    this.maxspeed = 10;    // Maximum speed
+    this.maxforce = 0.5; // Maximum steering force
     this.color;
     this.text = "Boid";
   }
@@ -172,7 +187,7 @@ class Boid {
     let gol = this.goal(); //Goal Position
     // Arbitrarily weight these forces
     sep.mult(1.29);
-    ali.mult(1.0);
+    ali.mult(1.1);
     if (cohAmp > 0.1){coh.mult(0.77 * cohAmp)}
     else {coh.mult(0.77)} 
     gol.mult(1.41);
@@ -209,12 +224,12 @@ class Boid {
   
   // Draw boid as a circle
   render() {
+    push();
+    fill((this.position.x / width) * 44, (this.position.x / width) * 44, 255 - ((this.position.y / height) * 255));
+    noStroke();
+    star(this.position.x, this.position.y, 5, 15, 5);
+    pop();
     
-    stroke(255, 0, 0);
-    fill(0, 255, 0);
-    text(this.text, this.position.x, this.position.y);
-    fill(255 - this.color, 0, 0);
-    square(this.position.x, this.position.y, this.r);
   }
   
   // BOUNCE OFF WALLS
@@ -241,7 +256,7 @@ class Boid {
   // Separation
   // Method checks for nearby boids and steers away
   separate(boids) {
-    let desiredseparation = 3300.0;
+    let desiredseparation = 100.0;
     let steer = createVector(0, 0);
     let count = 0;
     // For every boid in the system, check if it's too close
@@ -276,7 +291,7 @@ class Boid {
   // Alignment
   // For every nearby boid in the system, calculate the average velocity
   align(boids) {
-    let neighbordist = 700;
+    let neighbordist = 45;
     let sum = createVector(0, 0);
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
@@ -301,7 +316,7 @@ class Boid {
   // Cohesion
   // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
   cohesion(boids) {
-    let neighbordist = 1000;
+    let neighbordist = 50;
     let sum = createVector(0, 0); // Start with empty vector to accumulate all locations
     let count = 0;
     for (let i = 0; i < boids.length; i++) {
@@ -319,9 +334,9 @@ class Boid {
     }
   }  
   goal() {
-    //let golPos = createVector(clamp(mouseX, 0, width), clamp(mouseY, 0, height));
-    let golPos = createVector(map(clamp(mouseX, 0, width), 0, width, -1, 1), map(clamp(mouseY, 0, height), 0, height, -1, 1));
-    //console.log(golPos);
+    //let golPos = createVector(0, 0);
+    let golPos = createVector(map(mouseX, 0, width, -10, 10), map(mouseY, 0, height, -10, 10));
+    console.log(golPos);
     let steer = p5.Vector.sub(golPos, this.velocity);
     steer.limit(this.maxforce);
     return steer;
