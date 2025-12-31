@@ -225,11 +225,10 @@ class Boid {
   // Draw boid as a circle
   render() {
     push();
-    fill((this.position.x / width) * 44, (this.position.x / width) * 44, 255 - ((this.position.y / height) * 255));
+    fill((this.position.x / width) * 44, (this.position.x / width) * 44, 400 - ((this.position.y / height) * 255));
     noStroke();
     star(this.position.x, this.position.y, 5, 15, 5);
     pop();
-    
   }
   
   // BOUNCE OFF WALLS
@@ -250,7 +249,6 @@ class Boid {
       this.position.y = height - this.r;
       this.velocity.y = this.velocity.y * -1;
     }
-
   }
   
   // Separation
