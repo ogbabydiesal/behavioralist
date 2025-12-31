@@ -5,7 +5,7 @@
  * (Rules: Cohesion, Separation, Alignment.)<br>
  * From <a href="http://natureofcode.com">natureofcode.com</a>.
  */
-
+let golPos;
 function star(x, y, radius1, radius2, npoints) {
   let angle = TWO_PI / npoints;
   let halfAngle = angle / 2.0;
@@ -125,6 +125,10 @@ function setup() {
 function draw() {
   background(0, 0, 0, 10);
   counter += 1;
+
+  if (counter % 75 == 0) {
+    isMoving();
+  }
   
   for (let i = 0; i < boids.length; i++) {
     boids[i].run(boids);
@@ -333,11 +337,27 @@ class Boid {
   }  
   goal() {
     //let golPos = createVector(0, 0);
-    let golPos = createVector(map(mouseX, 0, width, -10, 10), map(mouseY, 0, height, -10, 10));
-    console.log(golPos);
+    if (mouseX != pmouseX && mouseY != pmouseY) {
+      golPos = createVector(map(mouseX, 0, width, -10, 10), map(mouseY, 0, height, -10, 10));
+    }
+    
+    //console.log(golPos);
     let steer = p5.Vector.sub(golPos, this.velocity);
     steer.limit(this.maxforce);
     return steer;
   }
 }
 
+let movingCounter = 0;
+function isMoving() {
+  let moving = (mouseX != pmouseX || mouseY != pmouseY);
+  if (!moving) {
+    movingCounter++;
+    if (movingCounter > 5) {
+      console.log("setting new goal");
+      golPos = createVector(random(-1, 1), random(-1, 1));
+    }
+  } else {
+    movingCounter = 0;
+  }
+}
