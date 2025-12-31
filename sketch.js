@@ -357,7 +357,7 @@ function isMoving() {
   if (!moving) {
     movingCounter++;
     if (movingCounter > 5) {
-      golPos = createVector(random(-1, 1), random(-1, 1));
+      golPos = createVector(random(-2, 2), random(-2, 2));
     }
   } else {
     movingCounter = 0;
