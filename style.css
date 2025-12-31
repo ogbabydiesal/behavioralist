@@ -79,6 +79,10 @@ button::-webkit-search-cancel-button {
   border-style:solid
 }
 
+select {
+  color: #000;
+}
+
 canvas {
   border-radius:40px;
   filter: blur(2px);
