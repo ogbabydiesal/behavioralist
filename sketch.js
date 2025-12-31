@@ -126,8 +126,8 @@ function draw() {
   background(0, 0, 0, 10);
   counter += 1;
 
-  if (counter % 75 == 0) {
-    isMoving();
+  if (counter % 25 == 0) {
+    //isMoving();
   }
   
   for (let i = 0; i < boids.length; i++) {
@@ -337,6 +337,9 @@ class Boid {
   }  
   goal() {
     //let golPos = createVector(0, 0);
+    if (golPos === undefined) {
+      golPos = createVector(0, 0);
+    }
     if (mouseX != pmouseX && mouseY != pmouseY) {
       golPos = createVector(map(mouseX, 0, width, -10, 10), map(mouseY, 0, height, -10, 10));
     }
@@ -354,7 +357,6 @@ function isMoving() {
   if (!moving) {
     movingCounter++;
     if (movingCounter > 5) {
-      console.log("setting new goal");
       golPos = createVector(random(-1, 1), random(-1, 1));
     }
   } else {
