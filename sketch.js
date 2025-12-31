@@ -127,7 +127,7 @@ function draw() {
   counter += 1;
 
   if (counter % 25 == 0) {
-    //isMoving();
+    isMoving();
   }
   
   for (let i = 0; i < boids.length; i++) {
